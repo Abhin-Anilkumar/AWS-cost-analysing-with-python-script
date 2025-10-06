@@ -1,0 +1,97 @@
+🧾 AWS Billing Data Exporter
+
+This Python script fetches monthly AWS billing data using the AWS Cost Explorer API and saves it into a CSV file for easy analysis.
+It groups your AWS costs by service and region, rounding costs to two decimal places to match AWS invoice style.
+
+📦 Features
+
+Fetches UnblendedCost (matches AWS invoice rates minus discounts)
+
+Groups data by Service and Region
+
+Rounds costs to two decimal places (AWS-style)
+
+Exports a clean CSV report with regions as rows and services as columns
+
+Simple CLI arguments for month and year
+
+🧰 Requirements
+
+Python 3.8+
+
+AWS CLI configured with access to Cost Explorer
+
+AWS IAM permissions:
+
+{
+  "Effect": "Allow",
+  "Action": [
+    "ce:GetCostAndUsage"
+  ],
+  "Resource": "*"
+}
+
+📦 Installation
+
+Clone this repository
+
+git clone https://github.com/yourusername/aws-billing-exporter.git
+cd aws-billing-exporter
+
+
+Install dependencies
+
+pip install boto3
+
+
+Configure AWS credentials
+
+aws configure
+
+
+Make sure you have access to Cost Explorer API.
+
+🚀 Usage
+
+Run the script with the desired month and year:
+
+python aws_billing_export.py --month 9 --year 2025
+
+
+This will create a file like:
+
+aws_billing_2025_09.csv
+
+Example Output
+Region	AmazonEC2	AmazonS3	AWSLambda	...
+us-east-1	120.45	45.67	3.20	...
+us-west-2	98.30	25.10	2.85	...
+ap-south-1	76.00	15.50	1.10	...
+⚙️ Script Details
+1. fetch_billing_data(start_date, end_date)
+
+Fetches monthly cost data from AWS Cost Explorer for the given time range.
+
+2. process_and_save_to_csv(response, file_name)
+
+Processes the API response and writes it to a CSV file, rounding each cost.
+
+3. main()
+
+Handles argument parsing, date calculation, and execution flow.
+
+🧩 Example CSV Naming
+Month	Year	Generated File
+8	2025	aws_billing_2025_08.csv
+9	2025	aws_billing_2025_09.csv
+1	2024	aws_billing_2024_01.csv
+🛠 Troubleshooting
+
+Error: You are not authorized to perform ce:GetCostAndUsage
+→ Ensure your IAM user or role has the correct permission.
+
+Error: Unable to locate credentials
+→ Run aws configure and set valid credentials.
+
+No data returned
+→ Make sure Cost Explorer is enabled in your AWS account and that you are querying a valid month.
