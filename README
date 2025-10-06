@@ -1,120 +1,61 @@
-This is a great request\! I will restructure the provided content into a well-formatted **README.md** file using standard GitHub Markdown syntax.
+AWS Billing Data Fetcher
+A Python script to fetch monthly AWS billing data from Cost Explorer, grouped by service and region, and export it to a CSV file. Costs are rounded to two decimal places to match AWS invoice listings (using UnblendedCost metric).
+Features
 
-This includes using headings, code blocks for commands, bolding for emphasis, and proper list formatting.
+Fetches monthly cost data for a specified year and month.
+Groups costs by AWS Service and Region.
+Outputs a CSV with regions as rows and services as columns (defaults to 0.00 for missing values).
+Uses AWS Cost Explorer API for accurate, unblended costs (excludes discounts).
 
-````markdown
-# 🧾 AWS Billing Data Exporter
+Requirements
 
-This Python script fetches monthly AWS billing data using the **AWS Cost Explorer API** and saves it into a **CSV file** for easy analysis.
+Python 3.6+ (tested with 3.12).
+AWS CLI or boto3 configured with valid credentials (e.g., aws configure).
+Access to AWS Cost Explorer (requires appropriate IAM permissions, such as ce:GetCostAndUsage).
 
-It groups your AWS costs by service and region, rounding costs to two decimal places to match AWS invoice style.
+Dependencies
 
----
+boto3 (AWS SDK for Python).
+csv and argparse (standard library).
+decimal and datetime (standard library).
 
-## 📦 Features
+Install boto3 if needed:
+bashpip install boto3
+Installation
 
-* Fetches **UnblendedCost** (matches AWS invoice rates minus discounts).
-* Groups data by **Service** and **Region**.
-* Rounds costs to **two decimal places** (AWS-style).
-* Exports a clean **CSV report** with regions as rows and services as columns.
-* Simple **CLI arguments** for month and year.
+Clone or download the script.
+Ensure your AWS credentials are set up (e.g., via environment variables, IAM roles, or AWS CLI profiles).
+The script uses the us-east-1 region for Cost Explorer by default (configurable in code if needed).
 
----
+Usage
+Run the script from the command line, providing the month and year as arguments.
+Command-Line Arguments
 
-## 🧰 Requirements
+--month (required): Month number (1-12).
+--year (required): Year (e.g., 2025).
 
-* **Python 3.8+**
-* **AWS CLI** configured with access to Cost Explorer.
-* **AWS IAM permissions**: The executing user or role must have the following policy:
+Example
+bashpython aws_billing_fetcher.py --month 8 --year 2025
+This fetches data for August 2025 and generates aws_billing_2025_08.csv.
+Output CSV Format
 
-```json
-{
-  "Effect": "Allow",
-  "Action": [
-    "ce:GetCostAndUsage"
-  ],
-  "Resource": "*"
-}
-````
+Header: Region followed by sorted service names.
+Rows: Sorted regions, with costs (or 0.00) for each service.
 
------
+Example snippet:
+textRegion,Amazon EC2,Amazon S3,Other Services
+ap-southeast-1,12.34,5.67,0.00
+us-east-1,45.67,23.45,1.23
+Notes
 
-## 📦 Installation
+Data is fetched for the full month (1st to end-of-month).
+Handles errors gracefully (e.g., API failures) and prints status messages.
+Costs use ROUND_HALF_UP quantization to match AWS billing precision.
+For historical data, ensure the date range is within Cost Explorer's 13-month lookback limit.
+Customize the script (e.g., add more groupings or metrics) as needed.
 
-1.  **Clone this repository:**
+Troubleshooting
 
-<!-- end list -->
-
-```bash
-git clone [https://github.com/yourusername/aws-billing-exporter.git](https://github.com/yourusername/aws-billing-exporter.git)
-cd aws-billing-exporter
-```
-
-2.  **Install dependencies:**
-
-<!-- end list -->
-
-```bash
-pip install boto3
-```
-
-3.  **Configure AWS credentials:**
-
-<!-- end list -->
-
-```bash
-aws configure
-```
-
-> **Note:** Make sure your configured AWS credentials have the necessary permissions to access the Cost Explorer API.
-
------
-
-## 🚀 Usage
-
-Run the script with the desired month and year using the command-line interface:
-
-```bash
-python aws_billing_export.py --month 9 --year 2025
-```
-
-This will create a file named in the format `aws_billing_<year>_<month>.csv`.
-
-### 🧩 Example CSV Naming
-
-| Month | Year | Generated File |
-| :---- | :--- | :------------- |
-| 8     | 2025 | `aws_billing_2025_08.csv` |
-| 9     | 2025 | `aws_billing_2025_09.csv` |
-| 1     | 2024 | `aws_billing_2024_01.csv` |
-
-### Example Output
-
-| Region | AmazonEC2 | AmazonS3 | AWSLambda | ... |
-| :----- | :-------- | :------- | :-------- | :-- |
-| us-east-1 | 120.45 | 45.67 | 3.20 | ... |
-| us-west-2 | 98.30 | 25.10 | 2.85 | ... |
-| ap-south-1 | 76.00 | 15.50 | 1.10 | ... |
-
------
-
-## ⚙️ Script Details
-
-The script is structured into three main functions:
-
-1.  `fetch_billing_data(start_date, end_date)`: Fetches monthly cost data from AWS Cost Explorer for the given time range.
-2.  `process_and_save_to_csv(response, file_name)`: Processes the API response and writes it to a CSV file, rounding each cost.
-3.  `main()`: Handles argument parsing, date calculation, and execution flow.
-
------
-
-## 🛠 Troubleshooting
-
-| Error Message | Solution |
-| :--- | :--- |
-| **Error: You are not authorized to perform ce:GetCostAndUsage** | → Ensure your IAM user or role has the **correct permission** as outlined in the [Requirements](https://www.google.com/search?q=%23%25F0%259F%25A7%25A0-requirements) section. |
-| **Error: Unable to locate credentials** | → Run `aws configure` and set valid credentials. |
-| **No data returned** | → Make sure **Cost Explorer is enabled** in your AWS account and that you are querying a valid month (i.e., not a future month). |
-
-```
-```
+Permission Denied: Check IAM policy for Cost Explorer access.
+No Data: Verify the date range has billable usage.
+Region Issues: Cost Explorer aggregates across regions; adjust region_name in code if using a non-default region.
